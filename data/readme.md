@@ -1,0 +1,1 @@
+Credits to https://github.com/deathlyface for providing this dataset. Images are property of Google. This project is for educational purposes only.
