@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from models import *
 
 # TODO figure out class imbalance
 # TODO check sigmoid to see uncertainty at output
@@ -33,21 +34,15 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(120, 120),
 
 IMG_SHAPE = IMG_SIZE + (3,)
 
-pre_trained_model = tf.keras.applications.InceptionV3(input_shape=IMG_SHAPE, include_top=False, weights='imagenet')
+inception_v3 = inception_v3()
 
-for layer in pre_trained_model.layers:
-    layer.trainable = False
-
-last_layer = pre_trained_model.get_layer('mixed7')
+last_layer = inception_v3.get_layer('mixed7')
 print('last layer output shape:', last_layer.output_shape)
 last_output = last_layer.output
 
-x = layers.Flatten()(last_output)
-x = layers.Dense(32, activation='relu')(x)
-x = layers.Dropout(0.2)(x)
-x = layers.Dense(8, activation='softmax')(x)
+x = dense_top(last_output, 32, 8, 0.2, 'softmax')
 
-model = Model(pre_trained_model.input, x)
+model = Model(inception_v3.input, x)
 model.summary()
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
