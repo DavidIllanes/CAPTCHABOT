@@ -3,12 +3,20 @@ from tensorflow.keras import Model
 from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from models import *
+import matplotlib.pyplot as plt
 
-# TODO figure out class imbalance
-# TODO check sigmoid to see uncertainty at output
+
+# Figure out class imabalance
+# New colors to balance classes
+# Try no shuffle image loading
+# Figure out val > train accuracy
+# Push training to limit
+# Optimize params/top network
+
 
 SEED = 42
 IMG_SIZE = (120, 120)
+batch_size = 32
 train_dir = '../data/train'
 val_dir = '../data/val'
 test_dir = '../data/test'
@@ -48,8 +56,33 @@ model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc']
 
 history = model.fit(
       train_generator,
-      steps_per_epoch=100,
-      epochs=2,
+      steps_per_epoch=int(train_generator.n / batch_size),  # images / batch_size if we want to run all images
+      epochs=10,
       validation_data=val_generator,
-      validation_steps=50,
-      verbose=2)
+      validation_steps=int(val_generator.n / batch_size))
+
+
+acc = history.history['acc']
+val_acc = history.history['val_acc']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+plt.figure(figsize=(8, 8))
+plt.subplot(2, 1, 1)
+plt.plot(acc, label='Training Accuracy')
+plt.plot(val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.ylabel('Accuracy')
+plt.ylim([min(plt.ylim()),1])
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(2, 1, 2)
+plt.plot(loss, label='Training Loss')
+plt.plot(val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.ylabel('Cross Entropy')
+plt.ylim([0,1.0])
+plt.title('Training and Validation Loss')
+plt.xlabel('epoch')
+plt.show()
